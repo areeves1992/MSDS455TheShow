@@ -62,7 +62,9 @@ fetchData <- function(yearOfData, monthOfData){
 ######END OFFUNCTION DECLARATIONS #########
 ###########################################
 
-
+###########################################
+######START OF THE CODE ###################
+###########################################
 
 #You will have to change this to make it work on your machine.
 workingDir <- 'C:\\Users\\areev\\MSDS455TheShow'
@@ -70,11 +72,48 @@ workingDir <- 'C:\\Users\\areev\\MSDS455TheShow'
 setwd(workingDir)
 
 
-
 #gui version: https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr
 
+#Set the variables to the start of the data - 1988 and 01/January
 yearToFetch <- 1988
 
 monthToFetch <- 1
 
-fetchData(yearOfData = yearToFetch, monthOfData = monthToFetch)
+#While the year is less than 2023 as the data don't exisit in the future
+while(yearToFetch < 2023){
+  
+  #While we have not iterated paste 12 or December
+  while(monthToFetch <= 12){
+    
+    #Print a message to the user
+    print(paste0("Currently fetching year: ", yearToFetch, " and month: ", monthToFetch))
+    
+    #Fetch, download, and append the data.
+    #fetchData(yearOfData = yearToFetch, monthOfData = monthToFetch)
+    
+    #Iterate through the months increase them by one.
+    monthToFetch <- monthToFetch + 1
+    
+    #edit this if when new data become available
+    if(yearToFetch == 2022 & monthToFetch == 8){
+      print("Stopping fetching as there is no more data.")
+      break()
+      
+    }#end of data checking if
+      
+  }#End of month while
+    
+
+  #If the month is December/12, reset this variable to January or 1
+  if(monthToFetch > 12){
+    print("in the if")
+    monthToFetch <- 1
+  }#end of if
+  
+  #Iterate through the years, increase the year by one
+  yearToFetch <- yearToFetch + 1
+  
+    
+}#End of the entire while loop
+
+
