@@ -48,6 +48,8 @@ fetchData <- function(yearOfData, monthOfData){
     #Read it in quickly
     flightDataTemp <- fread(fileToReadIn)
     
+    unlink(temp)
+    
     #Remove the old one. THIS IS NECESSARY AND WILL CAUSE ISSUES IF NOT RUN
     file.remove(fileToReadIn)
     
@@ -96,6 +98,8 @@ fetchData <- function(yearOfData, monthOfData){
         #Read it in quickly
         flightDataTemp <- fread(fileToReadIn)
   
+        unlink(temp)
+        
         #Remove the old one. THIS IS NECESSARY AND WILL CAUSE ISSUES IF NOT RUN
         file.remove(fileToReadIn)
   
