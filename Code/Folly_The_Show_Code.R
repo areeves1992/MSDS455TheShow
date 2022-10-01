@@ -23,37 +23,40 @@ library(dplyr)
 
 #I need to document this function
 fetchData <- function(yearOfData, monthOfData){
-  
-  flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
-  
-  dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
-  
-  if(nrow(dataCheck) > 0){
-    print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
+  if(is.null(nrow(list.files(paste0(getwd(),"\\Data"), pattern = "On_")))){
+    print("in that first if")
+    flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
     
-    return()
+    dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
     
-  }else{
+    if(nrow(dataCheck) > 0){
+      print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
+
+      return()
+    
+      
+    }else{
+      print("in that else")
+      temp <- tempfile()
   
-    temp <- tempfile()
+      fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
   
-    fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
+      #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
   
-    #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
+      download.file(fileURL, temp)
   
-    download.file(fileURL, temp)
+      unzip(temp, exdir = paste0(getwd(),"\\Data"))
   
-    unzip(temp, exdir = paste0(getwd(),"\\Data"))
+      fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
   
-    fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
+      flightDataTemp <- fread(fileToReadIn)
   
-    flightDataTemp <- fread(fileToReadIn)
+      file.remove(fileToReadIn)
   
-    file.remove(fileToReadIn)
+      fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
   
-    fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
-  
-    return()
+      return()
+    }
   }
 }#end of function fetchData
 
@@ -79,7 +82,7 @@ yearToFetch <- 1988
 
 monthToFetch <- 1
 
-#While the year is less than 2023 as the data don't exisit in the future
+#While the year is less than 2023 as the data don't exist in the future
 while(yearToFetch < 2023){
   
   #While we have not iterated paste 12 or December
@@ -89,7 +92,7 @@ while(yearToFetch < 2023){
     print(paste0("Currently fetching year: ", yearToFetch, " and month: ", monthToFetch))
     
     #Fetch, download, and append the data.
-    #fetchData(yearOfData = yearToFetch, monthOfData = monthToFetch)
+    fetchData(yearOfData = yearToFetch, monthOfData = monthToFetch)
     
     #Iterate through the months increase them by one.
     monthToFetch <- monthToFetch + 1
@@ -106,7 +109,7 @@ while(yearToFetch < 2023){
 
   #If the month is December/12, reset this variable to January or 1
   if(monthToFetch > 12){
-    print("in the if")
+
     monthToFetch <- 1
   }#end of if
   
@@ -116,4 +119,4 @@ while(yearToFetch < 2023){
     
 }#End of the entire while loop
 
-
+print("End of script. :)")
