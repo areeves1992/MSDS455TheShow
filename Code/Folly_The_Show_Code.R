@@ -26,7 +26,7 @@ fetchData <- function(yearOfData, monthOfData){
   
   #If we already dont have a file called flight data, start it out and download
   if(length(list.files(paste0(getwd(),"\\Data"), pattern = "flightData")) < 1) {
-    
+    print("here?")
     #Create a temp file so we dont take up hard drive space
     temp <- tempfile()
     
@@ -63,20 +63,20 @@ fetchData <- function(yearOfData, monthOfData){
     }else{
       
       #Read in the current data csv
-      flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
+      #flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
       
       #filter to the current month and year to fetch
-      dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
+      #dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
       
       #Check to see if the data already exisit. If they do, get outta this loop and return
       #to the next iteration
-      if(nrow(dataCheck) > 0){
-        print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
+      #if(nrow(dataCheck) > 0){
+      #  print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
         
-        return()
+       # return()
       
       #If the data dont already exist start downloading and appending it.  
-      }else{
+      #}else{
         #Create a temp file so we dont take up hard drive space
         temp <- tempfile()
         
@@ -108,7 +108,7 @@ fetchData <- function(yearOfData, monthOfData){
   
         #Return and get outta this iteration
         return()
-      }#end of inner else
+      #}#end of inner else
       
   }#end of outer else
   
@@ -132,7 +132,7 @@ setwd(workingDir)
 #gui version: https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr
 
 #Set the variables to the start of the data - 1988 and 01/January
-yearToFetch <- 1988
+yearToFetch <- 2010
 
 monthToFetch <- 1
 
