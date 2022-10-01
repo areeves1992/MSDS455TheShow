@@ -132,7 +132,7 @@ setwd(workingDir)
 #gui version: https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr
 
 #Set the variables to the start of the data - 1988 and 01/January
-yearToFetch <- 2010
+yearToFetch <- 2018
 
 monthToFetch <- 1
 
