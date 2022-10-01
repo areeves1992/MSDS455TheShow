@@ -7,10 +7,12 @@
 #or if your code errors out.
 
 #install.packages("data.table")
-
+#install.packages("dplyr")
 ####
 
 library(data.table)
+
+library(dplyr)
 
 
 ######### END OF INSTALL PACKAGES ##########
@@ -19,25 +21,40 @@ library(data.table)
 ###########################################
 ######### FUNCTION DECLARATIONS ###########
 
-
+#I need to document this function
 fetchData <- function(yearOfData, monthOfData){
   
-  fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
+  flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
   
-  #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
+  dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
   
-  download.file(fileURL, temp)
+  if(nrow(dataCheck) > 0){
+    print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
+    
+    return()
+    
+  }else{
   
-  unzip(temp, exdir = paste0(getwd(),"\\Data"))
+    temp <- tempfile()
   
-  fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
+    fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
   
-  flightDataTemp <- fread(fileToReadIn)
+    #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
   
-  file.remove(fileToReadIn)
+    download.file(fileURL, temp)
   
-  fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
+    unzip(temp, exdir = paste0(getwd(),"\\Data"))
   
+    fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
+  
+    flightDataTemp <- fread(fileToReadIn)
+  
+    file.remove(fileToReadIn)
+  
+    fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
+  
+    return()
+  }
 }#end of function fetchData
 
 
@@ -52,12 +69,12 @@ workingDir <- 'C:\\Users\\areev\\MSDS455TheShow'
 
 setwd(workingDir)
 
-temp <- tempfile()
+
 
 #gui version: https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr
 
-yearOfData <- 1988
+yearToFetch <- 1988
 
-monthOfData <- 1
+monthToFetch <- 1
 
-
+fetchData(yearOfData = yearToFetch, monthOfData = monthToFetch)
