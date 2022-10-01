@@ -23,46 +23,96 @@ library(dplyr)
 
 #I need to document this function
 fetchData <- function(yearOfData, monthOfData){
-  if(is.null(nrow(list.files(paste0(getwd(),"\\Data"), pattern = "On_")))){
-    print("in that first if")
-    flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
+  
+  #If we already dont have a file called flight data, start it out and download
+  if(length(list.files(paste0(getwd(),"\\Data"), pattern = "flightData")) < 1) {
     
-    dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
+    #Create a temp file so we dont take up hard drive space
+    temp <- tempfile()
     
-    if(nrow(dataCheck) > 0){
-      print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
-
-      return()
+    #Create the url using the parameters
+    fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
     
-      
+    #For testing :)
+    #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
+    
+    #Download that file to the temp file
+    download.file(fileURL, temp)
+    
+    #unzip in the Data dir
+    unzip(temp, exdir = paste0(getwd(),"\\Data"))
+    
+    #Create the file path to read it in
+    fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
+    
+    #Read it in quickly
+    flightDataTemp <- fread(fileToReadIn)
+    
+    #Remove the old one. THIS IS NECESSARY AND WILL CAUSE ISSUES IF NOT RUN
+    file.remove(fileToReadIn)
+    
+    #Write/append it to the current flight data csv
+    fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
+    
+    return()
+    
+    #If we do have a file, we want to make sure we already didn't download this 
+    #month and year as this is already an expensive process and we dont want dupes.
     }else{
-      print("in that else")
-      temp <- tempfile()
+      
+      #Read in the current data csv
+      flightData <- fread(paste0(getwd(),"\\Data\\flightData.csv"))
+      
+      #filter to the current month and year to fetch
+      dataCheck <- flightData %>% dplyr::filter(Year == yearOfData, Month == monthOfData)
+      
+      #Check to see if the data already exisit. If they do, get outta this loop and return
+      #to the next iteration
+      if(nrow(dataCheck) > 0){
+        print(paste0("Already downloaded year ", yearOfData, " and month ", monthOfData,". Moving to next iteration."))
+        
+        return()
+      
+      #If the data dont already exist start downloading and appending it.  
+      }else{
+        #Create a temp file so we dont take up hard drive space
+        temp <- tempfile()
+        
+        #Create the url using the parameters
+        fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
   
-      fileURL <- paste0('https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_',yearOfData,'_', monthOfData, '.zip')
+        #For testing :)
+        #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
   
-      #fileURL <- 'https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2022_4.zip'
+        #Download that file to the temp file
+        download.file(fileURL, temp)
   
-      download.file(fileURL, temp)
+        #unzip in the Data dir
+        unzip(temp, exdir = paste0(getwd(),"\\Data"))
+        
+        #Create the file path to read it in
+        fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
   
-      unzip(temp, exdir = paste0(getwd(),"\\Data"))
+        #Read it in quickly
+        flightDataTemp <- fread(fileToReadIn)
   
-      fileToReadIn <- paste0(paste0(getwd(),"\\Data") ,"\\", list.files(paste0(getwd(),"\\Data"), pattern = "On_"))
+        #Remove the old one. THIS IS NECESSARY AND WILL CAUSE ISSUES IF NOT RUN
+        file.remove(fileToReadIn)
   
-      flightDataTemp <- fread(fileToReadIn)
+        #Write/append it to the current flight data csv
+        fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
   
-      file.remove(fileToReadIn)
+        #Return and get outta this iteration
+        return()
+      }#end of inner else
+      
+  }#end of outer else
   
-      fwrite(flightDataTemp, paste0(paste0(getwd(),"\\Data") ,"\\","flightData.csv"), append = TRUE)
-  
-      return()
-    }
-  }
 }#end of function fetchData
 
 
 
-######END OFFUNCTION DECLARATIONS #########
+######END OF FUNCTION DECLARATIONS ########
 ###########################################
 
 ###########################################
