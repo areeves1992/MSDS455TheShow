@@ -132,12 +132,12 @@ setwd(workingDir)
 #gui version: https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr
 
 #Set the variables to the start of the data - 1988 and 01/January
-yearToFetch <- 2018
+yearToFetch <- 2020
 
 monthToFetch <- 1
 
 #While the year is less than 2023 as the data don't exist in the future
-while(yearToFetch < 2023){
+while(yearToFetch < 2022){
   
   #While we have not iterated paste 12 or December
   while(monthToFetch <= 12){

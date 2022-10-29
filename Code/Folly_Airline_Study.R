@@ -10,16 +10,19 @@
 #install.packages("data.table")
 library(data.table)
 
+#install.packages("dplyr")
+library(dplyr)
 ############################################
 
 ############################################
 #Read in that data #########################
 ############################################
 
-#Read in the data we got from the other script from my local hard drive
-ptm <- proc.time()
+setwd("G:\\My Drive\\Northwestern\\455 Data Viz\\The Show\\Data")
 
-flightData <- data.table::fread("G:\\My Drive\\Northwestern\\455 Data Viz\\The Show\\Data\\flightData.csv")
+
+
+#flightData <- data.table::fread("grep 2020 flightData.csv")
 
 proc.time() - ptm
 
