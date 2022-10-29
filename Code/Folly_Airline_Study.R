@@ -12,6 +12,15 @@ library(data.table)
 
 #install.packages("dplyr")
 library(dplyr)
+
+#install.packages("ggplot2")
+library(ggplot2)
+
+#install.packages("ggthemes")
+library(ggthemes)
+
+#install.packages("lubridate")
+library(lubridate)
 ############################################
 
 ############################################
@@ -52,3 +61,21 @@ flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCod
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
 
+#Summarize the data
+
+#Number of Flights by Airlines over time
+
+numFlightsByCarrierDate <- flightData %>%
+                          group_by(AirlineCarrier, FlightDate) %>%
+                          summarise(numFlights = n())
+
+topFiveAirlines <- numFlightsByCarrierDate %>% 
+  arrange(desc(numFlights)) %>% 
+  group_by(FlightDate) %>% slice(1:5)
+
+
+ggplot(data=topFiveAirlines, aes(x=FlightDate, y=numFlights, 
+                                 group=AirlineCarrier, color=AirlineCarrier))+
+  geom_line()  + scale_y_continuous() + 
+  theme_tufte()  + ggtitle("Number of Flights Per Week") + 
+  xlab("Date")  + ylab("Number of Flights")
