@@ -18,19 +18,24 @@ library(dplyr)
 #Read in that data #########################
 ############################################
 
+#Set my working directory
 setwd("G:\\My Drive\\Northwestern\\455 Data Viz\\The Show\\Data\\Airline Data")
 
+#Start a timer as this took forever the first time
 ptm <- proc.time()
 
+#Load using fread
 flightData <- data.table::fread("flightData2.csv")
 
+#Create a small test version to look at
 testFlightData <- head(flightData)
 
+#Read in the look up tables from the FAA
 cancellationReasons <- data.table::fread("L_CANCELLATION.csv")
-
 
 carrierCodes <- data.table::fread("L_UNIQUE_CARRIERS.csv")
 
+#Stop the timer
 proc.time() - ptm
 
 #Clean the look up tables
@@ -44,6 +49,6 @@ flightData <- left_join(flightData, carrierCodes, by = c("Reporting_Airline" = "
 
 flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCode" = "Code"))
 
-
+#Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
 
