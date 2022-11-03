@@ -61,6 +61,12 @@ flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCod
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
 
+
+flightData$week <- floor_date(numFlightsByCarrierDate$FlightDate, "week")
+
+flightData$dayOfWeek <- wday(flightData$FlightDate, abbr = TRUE)
+
+
 #Summarize the data
 
 #Number of Flights by Airlines over time
@@ -69,12 +75,23 @@ numFlightsByCarrierDate <- flightData %>%
                           group_by(AirlineCarrier, FlightDate) %>%
                           summarise(numFlights = n())
 
+
 topFiveAirlines <- numFlightsByCarrierDate %>% 
   arrange(desc(numFlights)) %>% 
-  group_by(FlightDate) %>% slice(1:5)
+  group_by(week) %>% slice(1:5)
 
+topFiveAirlines <- topFiveAirlines %>%  group_by(week) %>% sumarise(numFlights)
+
+#topFiveAirlines$week <- floor_date(topFiveAirlines$FlightDate, "week")
 
 ggplot(data=topFiveAirlines, aes(x=FlightDate, y=numFlights, 
+                                 group=AirlineCarrier, color=AirlineCarrier))+
+  geom_line()  + scale_y_continuous() + 
+  theme_tufte()  + ggtitle("Number of Flights Per Week") + 
+  xlab("Date")  + ylab("Number of Flights")
+
+
+ggplot(data=topFiveAirlines, aes(x=week, y=numFlights, 
                                  group=AirlineCarrier, color=AirlineCarrier))+
   geom_line()  + scale_y_continuous() + 
   theme_tufte()  + ggtitle("Number of Flights Per Week") + 
