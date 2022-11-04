@@ -21,6 +21,9 @@ library(ggthemes)
 
 #install.packages("lubridate")
 library(lubridate)
+
+#install.packages("lubridate")
+library(scales)
 ############################################
 
 ############################################
@@ -62,17 +65,20 @@ flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCod
 testFlightData <- head(flightData, n = 100000)
 
 
-flightData$week <- floor_date(numFlightsByCarrierDate$FlightDate, "week")
+flightData$week <- floor_date(flightData$FlightDate, "week")
 
-flightData$dayOfWeek <- wday(flightData$FlightDate, abbr = TRUE)
+flightData$dayOfWeek <- wday(flightData$FlightDate, abbr = TRUE, label = TRUE)
 
 
-#Summarize the data
+#Create another test DF as the real file is GBs.
+testFlightData <- head(flightData, n = 100000)
 
-#Number of Flights by Airlines over time
 
+#Summarize the data and create graphics
+
+#Line graph - Number of Flights by Airlines over time
 numFlightsByCarrierDate <- flightData %>%
-                          group_by(AirlineCarrier, FlightDate) %>%
+                          group_by(AirlineCarrier, week) %>%
                           summarise(numFlights = n())
 
 
@@ -80,19 +86,28 @@ topFiveAirlines <- numFlightsByCarrierDate %>%
   arrange(desc(numFlights)) %>% 
   group_by(week) %>% slice(1:5)
 
-topFiveAirlines <- topFiveAirlines %>%  group_by(week) %>% sumarise(numFlights)
 
-#topFiveAirlines$week <- floor_date(topFiveAirlines$FlightDate, "week")
-
-ggplot(data=topFiveAirlines, aes(x=FlightDate, y=numFlights, 
+numberOfFlightsOverTime <- ggplot(data=topFiveAirlines, aes(x=week, y=numFlights, 
                                  group=AirlineCarrier, color=AirlineCarrier))+
-  geom_line()  + scale_y_continuous() + 
-  theme_tufte()  + ggtitle("Number of Flights Per Week") + 
-  xlab("Date")  + ylab("Number of Flights")
+  geom_line()  + scale_y_continuous(n.breaks = 10, label = comma)   + ggtitle("Top 5 Airlines Per Week") + 
+  xlab("Date")  + ylab("Number of Flights Per Week") + 
+  guides(color=guide_legend(title="Airline")) + 
+  theme_tufte()
 
 
-ggplot(data=topFiveAirlines, aes(x=week, y=numFlights, 
-                                 group=AirlineCarrier, color=AirlineCarrier))+
-  geom_line()  + scale_y_continuous() + 
-  theme_tufte()  + ggtitle("Number of Flights Per Week") + 
-  xlab("Date")  + ylab("Number of Flights")
+##Bar chart - number of flights per day of week
+numFlightsByCarrierDay <- flightData %>%
+  group_by(AirlineCarrier, dayOfWeek) %>%
+  summarise(numFlights = n())
+
+topFiveAirlinesDayofWeek <- numFlightsByCarrierDay %>% 
+  arrange(desc(numFlights)) %>% 
+  group_by(dayOfWeek) %>% slice(1:5)
+
+numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfWeek, y = numFlights, 
+                                            fill = AirlineCarrier)) +
+  geom_bar(stat = "identity", position=position_dodge() ) + 
+  scale_y_continuous(n.breaks = 12, label = comma)   + 
+  ggtitle("Top 5 Airlines: Number of Flights Per Week Day") + 
+  xlab("Day of Week")  + ylab("Number of Flights") + 
+  guides(fill=guide_legend(title="Airline")) 
