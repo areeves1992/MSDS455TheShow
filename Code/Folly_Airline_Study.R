@@ -24,6 +24,15 @@ library(lubridate)
 
 #install.packages("lubridate")
 library(scales)
+
+#install.packages("maps")
+library(maps)
+
+#install.packages("tidycensus")
+library(tidycensus)
+
+#install.packages("sf")
+library(sf)
 ############################################
 
 ############################################
@@ -111,3 +120,33 @@ numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfW
   ggtitle("Top 5 Airlines: Number of Flights Per Week Day") + 
   xlab("Day of Week")  + ylab("Number of Flights") + 
   guides(fill=guide_legend(title="Airline")) 
+
+##############################################
+# testing some map stuff out
+##############################################
+
+data(state.fips)
+
+variablesToQuery <- load_variables(2020, "acs5", cache = TRUE)
+
+
+Sys.getenv("CENSUS_API_KEY")
+
+geometry <- get_acs(geography = "state",
+        variables = 	
+          "B01001_001", 
+        year = 2020, geometry = TRUE)
+
+numOriginFipsTest <- testFlightData %>% group_by(OriginStateFips) %>%
+  summarise(numFlights = n())
+
+geometry$GeoInt <- as.integer(geometry$GEOID)
+
+numOriginFipsTest <- geometry  %>% 
+  left_join(numOriginFipsTest, by=c('GeoInt'='OriginStateFips'))
+#numOriginFipsTest %>% map("state", fill=TRUE, col=numOriginFipsTest$numFlights)
+
+#remove air from the airline names!
+
+ggplot(data = numOriginFipsTest, aes(fill = numFlights)) +
+  geom_sf()
