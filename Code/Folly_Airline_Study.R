@@ -33,6 +33,9 @@ library(tidycensus)
 
 #install.packages("sf")
 library(sf)
+
+#install.packages("stringr")
+library(stringr)
 ############################################
 
 ############################################
@@ -69,6 +72,9 @@ carrierCodes <- carrierCodes %>% rename(AirlineCarrier = Description)
 flightData <- left_join(flightData, carrierCodes, by = c("Reporting_Airline" = "Code"))
 
 flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCode" = "Code"))
+
+flightData$AirlineCarrier <- str_extract(flightData$AirlineCarrier, "^([^\\s]+)")
+
 
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
