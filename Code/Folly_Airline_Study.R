@@ -36,6 +36,9 @@ library(sf)
 
 #install.packages("stringr")
 library(stringr)
+
+#install.packages("tidyr")
+library("tidyr")
 ############################################
 
 ############################################
@@ -131,6 +134,8 @@ numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfW
 # testing some map stuff out
 ##############################################
 
+###NEED TO CHANGE ALL OF THIS TO REAL DATA SET NOT THE SAMPLE!!
+
 data(state.fips)
 
 variablesToQuery <- load_variables(2020, "acs5", cache = TRUE)
@@ -143,16 +148,29 @@ geometry <- get_acs(geography = "state",
           "B01001_001", 
         year = 2020, geometry = TRUE)
 
-numOriginFipsTest <- testFlightData %>% group_by(OriginStateFips) %>%
+topAirlinesMaps <- testFlightData %>% group_by(AirlineCarrier) %>%
+  summarise(numFlights = n())
+            
+topAirlinesMaps <- topAirlinesMaps %>% 
+    arrange(desc(numFlights)) %>% 
+     slice(1:5)
+
+topAirlinesMaps <- unique(topAirlinesMaps$AirlineCarrier)
+
+numOriginFipsTest <- testFlightData %>% filter(AirlineCarrier %in% topAirlinesMaps) %>% 
+  group_by(AirlineCarrier,OriginStateFips) %>%
   summarise(numFlights = n())
 
 geometry$GeoInt <- as.integer(geometry$GEOID)
 
 numOriginFipsTest <- geometry  %>% 
-  left_join(numOriginFipsTest, by=c('GeoInt'='OriginStateFips'))
+  left_join(numOriginFipsTest, by=c('GeoInt'='OriginStateFips')) 
 #numOriginFipsTest %>% map("state", fill=TRUE, col=numOriginFipsTest$numFlights)
 
-#remove air from the airline names!
+numOriginFipsTest <- numOriginFipsTest %>% tidyr::drop_na(AirlineCarrier)
+
 
 ggplot(data = numOriginFipsTest, aes(fill = numFlights)) +
-  geom_sf()
+  facet_wrap(~AirlineCarrier, nrow = 4) +
+  geom_sf() +
+  theme_void()
