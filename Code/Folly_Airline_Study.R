@@ -153,7 +153,7 @@ topAirlinesMaps <- testFlightData %>% group_by(AirlineCarrier) %>%
             
 topAirlinesMaps <- topAirlinesMaps %>% 
     arrange(desc(numFlights)) %>% 
-     slice(1:5)
+     slice(1:4)
 
 topAirlinesMaps <- unique(topAirlinesMaps$AirlineCarrier)
 
@@ -169,8 +169,13 @@ numOriginFipsTest <- geometry  %>%
 
 numOriginFipsTest <- numOriginFipsTest %>% tidyr::drop_na(AirlineCarrier)
 
+numOriginFipsTest <- numOriginFipsTest %>% filter(GeoInt <=56 ) %>% 
+  filter(GeoInt != 2) %>% filter(GeoInt != 15)
 
 ggplot(data = numOriginFipsTest, aes(fill = numFlights)) +
-  facet_wrap(~AirlineCarrier, nrow = 4) +
+  facet_wrap(~AirlineCarrier, nrow = 2, ncol = 2) +
   geom_sf() +
-  theme_void()
+  theme_void() +
+  scale_fill_distiller(palette = "Purples", 
+                       direction = 1) + 
+  title("Number of Flights by Origin State by Top Four Airlines")
