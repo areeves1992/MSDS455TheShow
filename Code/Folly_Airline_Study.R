@@ -76,17 +76,18 @@ flightData <- left_join(flightData, carrierCodes, by = c("Reporting_Airline" = "
 
 flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCode" = "Code"))
 
+#Remove "Airline" etc from the carrier - keep only the first word
 flightData$AirlineCarrier <- str_extract(flightData$AirlineCarrier, "^([^\\s]+)")
 
 
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
 
-
+#Find the week of the date of departure
 flightData$week <- floor_date(flightData$FlightDate, "week")
 
+#Find day of week
 flightData$dayOfWeek <- wday(flightData$FlightDate, abbr = TRUE, label = TRUE)
-
 
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
@@ -99,15 +100,15 @@ numFlightsByCarrierDate <- flightData %>%
                           group_by(AirlineCarrier, week) %>%
                           summarise(numFlights = n())
 
-
+#Find the top 5 by number of flights by week
 topFiveAirlines <- numFlightsByCarrierDate %>% 
   arrange(desc(numFlights)) %>% 
   group_by(week) %>% slice(1:5)
 
-
+#Create line graph of the number of flights per week by airline
 numberOfFlightsOverTime <- ggplot(data=topFiveAirlines, aes(x=week, y=numFlights, 
                                  group=AirlineCarrier, color=AirlineCarrier))+
-  geom_line()  + scale_y_continuous(n.breaks = 10, label = comma)   + ggtitle("Top 5 Airlines Per Week") + 
+  geom_line()  + scale_y_continuous(n.breaks = 10, label = comma)   + ggtitle("Top 5 Airlines Per Week by Flight Count") + 
   xlab("Date")  + ylab("Number of Flights Per Week") + 
   guides(color=guide_legend(title="Airline")) + 
   theme_tufte()
@@ -118,10 +119,12 @@ numFlightsByCarrierDay <- flightData %>%
   group_by(AirlineCarrier, dayOfWeek) %>%
   summarise(numFlights = n())
 
+#Find the top 5
 topFiveAirlinesDayofWeek <- numFlightsByCarrierDay %>% 
   arrange(desc(numFlights)) %>% 
   group_by(dayOfWeek) %>% slice(1:5)
 
+#Bar chart of the number of flights by week day by airline
 numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfWeek, y = numFlights, 
                                             fill = AirlineCarrier)) +
   geom_bar(stat = "identity", position=position_dodge() ) + 
@@ -131,10 +134,9 @@ numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfW
   guides(fill=guide_legend(title="Airline")) 
 
 ##############################################
-# testing some map stuff out
+# Create a heat map for the number of flights by origin state
+#Which airline has the most origin flights in ameria?
 ##############################################
-
-###NEED TO CHANGE ALL OF THIS TO REAL DATA SET NOT THE SAMPLE!!
 
 data(state.fips)
 
@@ -148,7 +150,7 @@ geometry <- get_acs(geography = "state",
           "B01001_001", 
         year = 2020, geometry = TRUE)
 
-topAirlinesMaps <- testFlightData %>% group_by(AirlineCarrier) %>%
+topAirlinesMaps <- flightData %>% group_by(AirlineCarrier) %>%
   summarise(numFlights = n())
             
 topAirlinesMaps <- topAirlinesMaps %>% 
@@ -157,25 +159,57 @@ topAirlinesMaps <- topAirlinesMaps %>%
 
 topAirlinesMaps <- unique(topAirlinesMaps$AirlineCarrier)
 
-numOriginFipsTest <- testFlightData %>% filter(AirlineCarrier %in% topAirlinesMaps) %>% 
+numOriginFips <- flightData %>% filter(AirlineCarrier %in% topAirlinesMaps) %>% 
   group_by(AirlineCarrier,OriginStateFips) %>%
   summarise(numFlights = n())
 
 geometry$GeoInt <- as.integer(geometry$GEOID)
 
-numOriginFipsTest <- geometry  %>% 
-  left_join(numOriginFipsTest, by=c('GeoInt'='OriginStateFips')) 
+numOriginFips <- geometry  %>% 
+  left_join(numOriginFips, by=c('GeoInt'='OriginStateFips')) 
 #numOriginFipsTest %>% map("state", fill=TRUE, col=numOriginFipsTest$numFlights)
 
-numOriginFipsTest <- numOriginFipsTest %>% tidyr::drop_na(AirlineCarrier)
+numOriginFips <- numOriginFips %>% tidyr::drop_na(AirlineCarrier)
 
-numOriginFipsTest <- numOriginFipsTest %>% filter(GeoInt <=56 ) %>% 
+numOriginFips <- numOriginFips %>% filter(GeoInt <=56 ) %>% 
   filter(GeoInt != 2) %>% filter(GeoInt != 15)
 
-ggplot(data = numOriginFipsTest, aes(fill = numFlights)) +
+numberofFlightsbyOriginState <- ggplot(data = numOriginFips, aes(fill = numFlights)) +
   facet_wrap(~AirlineCarrier, nrow = 2, ncol = 2) +
   geom_sf() +
   theme_void() +
-  scale_fill_distiller(palette = "Purples", 
-                       direction = 1) + 
-  title("Number of Flights by Origin State by Top Four Airlines")
+  scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Purples", direction = 1) +
+  labs(title = "Number of Flights by Origin State by Top Four Airlines",
+       caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
+
+##############################################
+# End Origin Map
+##############################################
+
+##############################################
+# Create a heat map for the number of flights by departure state
+# Which airline has the most departure flights in america?
+##############################################
+
+numDestFips <- flightData %>% filter(AirlineCarrier %in% topAirlinesMaps) %>% 
+  group_by(AirlineCarrier,DestStateFips) %>%
+  summarise(numFlights = n())
+
+geometry$GeoInt <- as.integer(geometry$GEOID)
+
+numDestFips <- geometry  %>% 
+  left_join(numDestFips, by=c('GeoInt'='DestStateFips')) 
+#numOriginFipsTest %>% map("state", fill=TRUE, col=numOriginFipsTest$numFlights)
+
+numDestFips <- numDestFips %>% tidyr::drop_na(AirlineCarrier)
+
+numDestFips <- numDestFips %>% filter(GeoInt <=56 ) %>% 
+  filter(GeoInt != 2) %>% filter(GeoInt != 15)
+
+numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights)) +
+  facet_wrap(~AirlineCarrier, nrow = 2, ncol = 2) +
+  geom_sf() +
+  theme_void() +
+  scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Purples", direction = 1) +
+  labs(title = "Number of Flights by Destination State by Top Four Airlines",
+       caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
