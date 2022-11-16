@@ -233,6 +233,8 @@ numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights))
 #Section for Melted data
 meltFlight <- flightData %>% select(AirlineCarrier, week, CarrierDelay, WeatherDelay, NASDelay, SecurityDelay, LateAircraftDelay)
 
+#meltFlight$id <- c(1:nrow(meltFlight))
+
 meltFlight <- melt(meltFlight, id.vars = c("AirlineCarrier", "week"))
 
 
@@ -243,5 +245,19 @@ meltFlight <- na.omit(meltFlight)
 
 typeOfDelay <- meltFlight %>%
   group_by(AirlineCarrier, variable) %>%
-  summarise(total = sum(value), mean = mean(value), n = n())
+  summarise(totalMinutes = sum(value), mean = mean(value))
 
+typeOfDelay <- typeOfDelay %>% 
+  arrange(desc(mean)) %>% 
+  group_by(variable) %>% 
+  slice(1:5)
+
+ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean, 
+                                            fill = AirlineCarrier)) +
+  geom_bar(stat = "identity", position=position_dodge() ) + 
+  facet_grid(~variable)
+
+  scale_y_continuous(n.breaks = 12, label = comma)   + 
+  ggtitle("Top 5 Airlines: Number of Flights Per Week Day") + 
+  xlab("Day of Week")  + ylab("Number of Flights") + 
+  guides(fill=guide_legend(title="Airline")) 
