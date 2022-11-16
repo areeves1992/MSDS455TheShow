@@ -229,3 +229,19 @@ numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights))
 ###########################################
 ## Delay Study
 ###########################################
+
+#Section for Melted data
+meltFlight <- flightData %>% select(AirlineCarrier, week, CarrierDelay, WeatherDelay, NASDelay, SecurityDelay, LateAircraftDelay)
+
+meltFlight <- melt(meltFlight, id.vars = c("AirlineCarrier", "week"))
+
+
+
+
+## Sum of Delay minutes
+meltFlight <- na.omit(meltFlight)
+
+typeOfDelay <- meltFlight %>%
+  group_by(AirlineCarrier, variable) %>%
+  summarise(total = sum(value), mean = mean(value), n = n())
+
