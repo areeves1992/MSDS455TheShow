@@ -39,6 +39,12 @@ library(stringr)
 
 #install.packages("tidyr")
 library("tidyr")
+
+#install.packages("reshape")
+library("reshape")
+
+#install.packages("reshape2")
+library("reshape2")
 ############################################
 
 ############################################
@@ -213,3 +219,13 @@ numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights))
   scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Purples", direction = 1) +
   labs(title = "Number of Flights by Destination State by Top Four Airlines",
        caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
+
+###########################################
+## Cancellation Study
+###########################################
+
+
+
+###########################################
+## Delay Study
+###########################################
