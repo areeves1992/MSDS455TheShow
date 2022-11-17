@@ -247,17 +247,19 @@ typeOfDelay <- meltFlight %>%
   group_by(AirlineCarrier, variable) %>%
   summarise(totalMinutes = sum(value), mean = mean(value))
 
+
+
 typeOfDelay <- typeOfDelay %>% 
-  arrange(desc(mean)) %>% 
-  group_by(variable) %>% 
-  slice(1:5)
+  filter(variable == 'CarrierDelay' ) %>%
+arrange(desc(mean))
 
-ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean, 
-                                            fill = AirlineCarrier)) +
-  geom_bar(stat = "identity", position=position_dodge() ) + 
-  facet_grid(~variable)
+typeOfDelay <- typeOfDelay[1:5,]
 
-  scale_y_continuous(n.breaks = 12, label = comma)   + 
-  ggtitle("Top 5 Airlines: Number of Flights Per Week Day") + 
-  xlab("Day of Week")  + ylab("Number of Flights") + 
-  guides(fill=guide_legend(title="Airline")) 
+ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean,
+                               fill = AirlineCarrier, label = AirlineCarrier)) +
+  geom_bar(stat = "identity", position=position_dodge() ) +
+  scale_y_continuous(n.breaks = 15, label = comma)   + 
+  ggtitle("Top 5 Airlines: Average Carrier Delay") + 
+  xlab("Airline")  + ylab("Average Delay (Minutes)") + 
+  guides(fill=guide_legend(title="Airline")) +
+  labs(caption = "Data Source: FAA Flight Data. 2020-2021.")
