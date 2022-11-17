@@ -98,6 +98,10 @@ flightData$dayOfWeek <- wday(flightData$FlightDate, abbr = TRUE, label = TRUE)
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
 
+#Colors as defined by our group via Canvas and the check-ins
+color_palette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+#"Main color" is dark blue so i will be using blue for my maps
 
 #Summarize the data and create graphics
 
@@ -109,12 +113,12 @@ numFlightsByCarrierDate <- flightData %>%
 #Find the top 5 by number of flights by week
 topFiveAirlines <- numFlightsByCarrierDate %>% 
   arrange(desc(numFlights)) %>% 
-  group_by(week) %>% slice(1:5)
+  group_by(week) %>% slice(1:4)
 
 #Create line graph of the number of flights per week by airline
 numberOfFlightsOverTime <- ggplot(data=topFiveAirlines, aes(x=week, y=numFlights, 
                                  group=AirlineCarrier, color=AirlineCarrier))+
-  geom_line()  + scale_y_continuous(n.breaks = 10, label = comma)   + ggtitle("Top 5 Airlines Per Week by Flight Count") + 
+  geom_line()  + scale_y_continuous(n.breaks = 10, label = comma)   + ggtitle("Top 4 Airlines Per Week by Flight Count") + 
   xlab("Date")  + ylab("Number of Flights Per Week") + 
   guides(color=guide_legend(title="Airline")) + 
   theme_tufte()
@@ -128,16 +132,17 @@ numFlightsByCarrierDay <- flightData %>%
 #Find the top 5
 topFiveAirlinesDayofWeek <- numFlightsByCarrierDay %>% 
   arrange(desc(numFlights)) %>% 
-  group_by(dayOfWeek) %>% slice(1:5)
+  group_by(dayOfWeek) %>% slice(1:4)
 
 #Bar chart of the number of flights by week day by airline
 numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfWeek, y = numFlights, 
                                             fill = AirlineCarrier)) +
   geom_bar(stat = "identity", position=position_dodge() ) + 
   scale_y_continuous(n.breaks = 12, label = comma)   + 
-  ggtitle("Top 5 Airlines: Number of Flights Per Week Day") + 
+  ggtitle("Top 4 Airlines: Number of Flights Per Week Day") + 
   xlab("Day of Week")  + ylab("Number of Flights") + 
-  guides(fill=guide_legend(title="Airline")) 
+  guides(fill=guide_legend(title="Airline")) + 
+  theme_tufte()
 
 ##############################################
 # Create a heat map for the number of flights by origin state
@@ -184,7 +189,7 @@ numberofFlightsbyOriginState <- ggplot(data = numOriginFips, aes(fill = numFligh
   facet_wrap(~AirlineCarrier, nrow = 2, ncol = 2) +
   geom_sf() +
   theme_void() +
-  scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Purples", direction = 1) +
+  scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Blues", direction = 1) +
   labs(title = "Number of Flights by Origin State by Top Four Airlines",
        caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
 
@@ -216,7 +221,7 @@ numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights))
   facet_wrap(~AirlineCarrier, nrow = 2, ncol = 2) +
   geom_sf() +
   theme_void() +
-  scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Purples", direction = 1) +
+  scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Blues", direction = 1) +
   labs(title = "Number of Flights by Destination State by Top Four Airlines",
        caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
 
@@ -253,13 +258,13 @@ typeOfDelay <- typeOfDelay %>%
   filter(variable == 'CarrierDelay' ) %>%
 arrange(desc(mean))
 
-typeOfDelay <- typeOfDelay[1:5,]
+typeOfDelay <- typeOfDelay[1:4,]
 
-ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean,
+avgCarrierDelay <- ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean,
                                fill = AirlineCarrier, label = AirlineCarrier)) +
   geom_bar(stat = "identity", position=position_dodge() ) +
   scale_y_continuous(n.breaks = 15, label = comma)   + 
-  ggtitle("Top 5 Airlines: Average Carrier Delay") + 
+  ggtitle("Top 4 Airlines: Average Carrier Delay") + 
   xlab("Airline")  + ylab("Average Delay (Minutes)") + 
   guides(fill=guide_legend(title="Airline")) +
   labs(caption = "Data Source: FAA Flight Data. 2020-2021.")
