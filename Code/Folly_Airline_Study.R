@@ -228,7 +228,36 @@ numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights))
 ###########################################
 ## Cancellation Study
 ###########################################
+meltFlightCancel <- flightData %>% select(AirlineCarrier, CancellationReasonDescription)
 
+meltFlightCancel <- dcast(meltFlightCancel, AirlineCarrier~CancellationReasonDescription)
+
+meltFlightCancelSums <-  meltFlightCancel[,2:6]%>%
+  mutate(sum_of_rows = rowSums(.))
+
+#meltFlightCancel <- select(meltFlightCancel, -c(6))
+meltFlightCancel$AirlineCarrier <- meltFlightCancel$AirlineCarrier
+
+meltFlightCancel2 <- melt(meltFlightCancel, id.vars = c("AirlineCarrier"))
+
+meltFlightCancel2 <- meltFlightCancel2 %>% group_by(AirlineCarrier) %>% mutate(percent = value/sum(value))
+
+meltFlightCancel2 <- meltFlightCancel2  %>%
+  group_by(variable) %>%
+  arrange(desc(percent)) %>% 
+  slice(1:4)
+
+meltFlightCancel2 <- meltFlightCancel2 %>% 
+  filter(variable != 'NA' )
+
+cancelllationPercent <- ggplot(meltFlightCancel2, aes(fill=AirlineCarrier, y=percent, x=variable)) + 
+  geom_bar(stat = "identity", position=position_dodge()) +
+  scale_y_continuous(n.breaks = 10, label = percent)   + 
+  ggtitle("Top 4 Airlines Per Cancellation Reason") + 
+  xlab("Cancellation Reason")  + ylab("Percent of Flights Flown by Carrier") + 
+  guides(fill=guide_legend(title="Airline")) +
+  labs(caption = "Data Source: FAA Flight Data. 2020-2021.") +
+  theme_tufte()
 
 
 ###########################################
@@ -267,4 +296,5 @@ avgCarrierDelay <- ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean,
   ggtitle("Top 4 Airlines: Average Carrier Delay") + 
   xlab("Airline")  + ylab("Average Delay (Minutes)") + 
   guides(fill=guide_legend(title="Airline")) +
-  labs(caption = "Data Source: FAA Flight Data. 2020-2021.")
+  labs(caption = "Data Source: FAA Flight Data. 2020-2021.") +
+  theme_tufte()
