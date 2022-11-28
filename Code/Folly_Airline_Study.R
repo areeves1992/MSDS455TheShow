@@ -47,12 +47,25 @@ library("reshape")
 library("reshape2")
 ############################################
 
+#I got this function from here:
+# https://milosdjeric.com/f-scale.html
+# stand on the shoulders of giants - but cite the giants!
+imenuj <- function(x) {
+  ifelse(x > 999999,
+         paste(comma(x * 0.000001), "M"),
+         ifelse(x > 999,
+                paste(x * 0.001, "K"),
+                paste(x)
+         )
+  )
+}
+
 ############################################
 #Read in that data #########################
 ############################################
 
 #Set my working directory
-setwd("G:\\My Drive\\Northwestern\\455 Data Viz\\The Show\\Data\\Airline Data")
+setwd("G:\\My Drive\\Northwestern\\455 Data Viz\\The Show\\Presentation\\Data\\Airline Data")
 
 #Start a timer as this took forever the first time
 ptm <- proc.time()
@@ -72,9 +85,9 @@ carrierCodes <- data.table::fread("L_UNIQUE_CARRIERS.csv")
 proc.time() - ptm
 
 #Clean the look up tables
-cancellationReasons <- cancellationReasons %>% rename(CancellationReasonDescription = Description)
+cancellationReasons <- cancellationReasons %>% dplyr::rename(CancellationReasonDescription = Description)
 
-carrierCodes <- carrierCodes %>% rename(AirlineCarrier = Description)
+carrierCodes <- carrierCodes %>% dplyr::rename(AirlineCarrier = Description)
 
 
 #Join the look up tables
@@ -138,7 +151,7 @@ topFiveAirlinesDayofWeek <- numFlightsByCarrierDay %>%
 numberOfFlightsPerWeek <- ggplot(data = topFiveAirlinesDayofWeek, aes(x = dayOfWeek, y = numFlights, 
                                             fill = AirlineCarrier)) +
   geom_bar(stat = "identity", position=position_dodge() ) + 
-  scale_y_continuous(n.breaks = 12, label = comma)   + 
+  scale_y_continuous(n.breaks = 12, labels = imenuj)   + 
   ggtitle("Top 4 Airlines: Number of Flights Per Week Day") + 
   xlab("Day of Week")  + ylab("Number of Flights") + 
   guides(fill=guide_legend(title="Airline")) + 
