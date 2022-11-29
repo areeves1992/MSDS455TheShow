@@ -285,6 +285,8 @@ meltFlight <- flightData %>% select(AirlineCarrier, week, CarrierDelay, WeatherD
 meltFlight <- melt(meltFlight, id.vars = c("AirlineCarrier", "week"))
 
 
+#Avg for
+mean(meltFlight$value)
 
 
 ## Sum of Delay minutes
