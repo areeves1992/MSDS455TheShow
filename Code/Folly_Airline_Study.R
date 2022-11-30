@@ -98,6 +98,8 @@ flightData <- left_join(flightData, cancellationReasons, by = c("CancellationCod
 #Remove "Airline" etc from the carrier - keep only the first word
 flightData$AirlineCarrier <- str_extract(flightData$AirlineCarrier, "^([^\\s]+)")
 
+#make them as factors so the colors remain the same
+flightData$AirlineCarrier<- as.factor(flightData$AirlineCarrier)
 
 #Create another test DF as the real file is GBs.
 testFlightData <- head(flightData, n = 100000)
@@ -204,7 +206,7 @@ numberofFlightsbyOriginState <- ggplot(data = numOriginFips, aes(fill = numFligh
   theme_void() +
   scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Blues", direction = 1) +
   labs(title = "Number of Flights by Origin State by Top Four Airlines",
-       caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
+    caption = "Lower 48 States Only. 2020-2021.")
 
 ##############################################
 # End Origin Map
@@ -236,7 +238,7 @@ numberofFlightsbyDestState <- ggplot(data = numDestFips, aes(fill = numFlights))
   theme_void() +
   scale_fill_distiller(labels=function(x) format(x, big.mark = ",", scientific = FALSE), palette = "Blues", direction = 1) +
   labs(title = "Number of Flights by Destination State by Top Four Airlines",
-       caption = "Data Source: FAA Flight Data, Census Geographies \n Lower 48 States Only. 2020-2021.")
+       caption = "Lower 48 States Only. 2020-2021.")
 
 ###########################################
 ## Cancellation Study
@@ -269,7 +271,7 @@ cancelllationPercent <- ggplot(meltFlightCancel2, aes(fill=AirlineCarrier, y=per
   ggtitle("Top 4 Airlines Per Cancellation Reason") + 
   xlab("Cancellation Reason")  + ylab("Percent of Flights Flown by Carrier") + 
   guides(fill=guide_legend(title="Airline")) +
-  labs(caption = "Data Source: FAA Flight Data. 2020-2021.") +
+  labs(caption = "2020-2021.") +
   theme_tufte()
 
 
@@ -311,5 +313,11 @@ avgCarrierDelay <- ggplot(data = typeOfDelay, aes(x = AirlineCarrier, y = mean,
   ggtitle("Top 4 Airlines: Average Carrier Delay") + 
   xlab("Airline")  + ylab("Average Delay (Minutes)") + 
   guides(fill=guide_legend(title="Airline")) +
-  labs(caption = "Data Source: FAA Flight Data. 2020-2021.") +
+  labs(caption = "2020-2021.") +
   theme_tufte()
+
+
+#flights per week day change the K.
+#export of map is cut off.
+#remove data citation and put it in the slide
+# make conclusion slide for airlines
